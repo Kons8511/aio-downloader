@@ -7,6 +7,112 @@
 <!-- MSG START -->
 
 ---
+📅 بروزرسانی: 1405/02/28 01:22
+---
+
+## kianmeli1 — post 87456
+
+<div align="center">
+  <img src="telegram/content/kianmeli1_87456_1779054774.jpg" alt="Photo">
+</div>
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+🔴پست جدید ترامپ که نیاز به توضیح ندارد
+https://t.me/kianmeli1
+</div>
+
+## IranIntlTV — post 337693
+
+<div align="center">
+  <a href="telegram/content/IranIntlTV_337693_1779054775.mp4" target="_blank">🎬 Download video</a>
+</div>
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+مراد ویسی، تحلیل‌گر ارشد ایران‌اینترنشنال، گفت: «مردم ایران، رفاه و پیشرفت دبی را با وضعیت نامساعد اقتصادی و معیشتی ایران مقایسه می‌کنند و این تفاوت را نتیجه عملکرد متفاوت رهبران جمهوری اسلامی می‌دانند. مقامات جمهوری اسلامی و فرماندهان سپاه نیز چون عقده دبی را دارند این چنین به امارات حمله می کنند.»
+@iranintltv
+</div>
+
+## FarsiVOA — post 218014
+
+<div align="center">
+  <img src="telegram/content/FarsiVOA_218014_1779054777.jpg" alt="Photo">
+</div>
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+⚡️مقامات آمریکایی گفتند که دو جت ائی‌ای-۱۸جی گرولر نیروی دریایی روز یکشنبه در نمایشگاه هوایی «گانفایتر اسکایز» در یک پایگاه نیروی هوایی در ایالت آیداهو، با هم در هوا برخورد کردند. به گفته مقامات، هر چهار خدمه با موفقیت ایجکت کردند و از هواپیما بیرون پریدند.
+@FarsiVOA
+</div>
+
+## FarsiVOA — post 218013
+
+
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+⚡️از خاموشی اینترنت مردم تا چشم حکومت به درآمدِ کابل‌های هرمز
+
+@FarsiVOA
+</div>
+
+## IranianMinds — post 20310
+
+
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+🔴 پست جدید ترامپ : @IranianMinds
+</div>
+
+## IranianMinds — post 20309
+
+
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+🔴 پست جدید ترامپ : @IranianMinds
+</div>
+
+## IranianMinds — post 20308
+
+
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+🔴 پست جدید ترامپ : @IranianMinds
+</div>
+
+## IranianMinds — post 20307
+
+<div align="center">
+  <img src="telegram/content/IranianMinds_20307_1779054777.jpg" alt="Photo">
+</div>
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+🔴 پست جدید ترامپ :
+
+@IranianMinds
+</div>
+
+## Dirty_Kids — post 389647
+
+<div align="center">
+  <img src="telegram/content/Dirty_Kids_389647_1779054777.jpg" alt="Photo">
+</div>
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+ترامپ در تروث‌سوشال رگباری گاییده. بیست سی‌تا پست پشت هم گذاشته تا الان. @Dirty_Kids 👻
+</div>
+
+## alonews — post 120721
+
+<div align="center">
+  <a href="telegram/content/alonews_120721_1779054778.webm" target="_blank">🎬 Download video</a>
+</div>
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+👈خوش چشم: قالیباف هَوَل مذاکره نیست
+
+
+✅ @AloNews خبر جنگ
+</div>
+
+## alonews — post 120720
+
+<div align="center">
+  <a href="telegram/content/alonews_120720_1779054778.webm" target="_blank">🎬 Download video</a>
+</div>
+<div dir='rtl' style='font-family: "Vazirmatn", Tahoma, sans-serif;'>
+👈ترامپ بازم پست گذاشت 
+✅ @AloNews خبر جنگ
+</div>
+
+---
 📅 بروزرسانی: 1405/02/28 01:12
 ---
 
