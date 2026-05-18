@@ -12,6 +12,10 @@ on:
         description: 'Bundle all downloaded files into a single split ZIP archive'
         type: boolean
         default: false
+      upload_as_release:
+        description: 'Upload files as a GitHub Release (uncheck = split push to repo)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -36,7 +40,6 @@ jobs:
         id: parse
         run: |
           URLS_INPUT="${{ github.event.inputs.url }}"
-          # Replace commas and newlines with spaces, then clean up
           URLS=$(echo "$URLS_INPUT" | tr ',' ' ' | tr '\n' ' ' | tr -s ' ' | sed 's/^ *//;s/ *$//')
           if [ -z "$URLS" ]; then
             echo "No URLs provided." >&2
@@ -51,13 +54,22 @@ jobs:
       - name: Download and process files
         run: |
           BUNDLE_ALL="${{ github.event.inputs.bundle_all }}"
+          UPLOAD_AS_RELEASE="${{ github.event.inputs.upload_as_release }}"
 
-          mkdir -p direct
-          # File for recording failed URLs
+          # Convert boolean to method string
+          if [ "$UPLOAD_AS_RELEASE" = "true" ]; then
+            UPLOAD_METHOD="release"
+          else
+            UPLOAD_METHOD="split_push"
+          fi
+
+          OUTPUT_DIR="direct"
+          rm -rf "$OUTPUT_DIR"
+          mkdir -p "$OUTPUT_DIR"
+
           FAILED_FILE="failed_urls.txt"
-          > "$FAILED_FILE"   # create/truncate
+          > "$FAILED_FILE"
 
-          # If bundling, prepare a shared folder
           if [ "$BUNDLE_ALL" = "true" ]; then
             BUNDLE_DIR="bundle_contents"
             mkdir -p "$BUNDLE_DIR"
@@ -69,12 +81,10 @@ jobs:
             echo "----------------------------------------"
             echo "Processing URL $index: $url"
 
-            # Download into a unique temporary folder for this URL
             DL_DIR="dl_$index"
             mkdir -p "$DL_DIR"
             aria2c -x 16 -s 16 -d "$DL_DIR" --console-log-level=warn --summary-interval=10 "$url" || true
 
-            # Get the downloaded filename (there should be exactly one file)
             DL_FILE=$(ls -1 "$DL_DIR" 2>/dev/null | head -n1)
             if [ -z "$DL_FILE" ]; then
               echo "Download failed or no file found for $url"
@@ -85,14 +95,11 @@ jobs:
             echo "Downloaded: $DL_FILE"
 
             if [ "$BUNDLE_ALL" = "true" ]; then
-              # Bundle mode: copy file to shared bundle folder, renaming on collision
               TARGET="$BUNDLE_DIR/$DL_FILE"
               if [ -e "$TARGET" ]; then
-                # Rename to avoid overwriting: add a counter
                 base="${DL_FILE%.*}"
                 ext="${DL_FILE##*.}"
                 if [ "$base" = "$ext" ]; then
-                  # No extension
                   base="$DL_FILE"
                   ext=""
                 else
@@ -107,7 +114,6 @@ jobs:
               cp "$DL_DIR/$DL_FILE" "$TARGET"
               echo "Added to bundle: $TARGET"
             else
-              # Individual zip mode: create a split zip for this file
               RAND5=$(tr -dc 'a-z' </dev/urandom | head -c5)
               ZIP_BASE="${DL_FILE}_${RAND5}"
               ZIP_NAME="${ZIP_BASE}.zip"
@@ -116,36 +122,61 @@ jobs:
               TMPZIP="tmpzip_$index"
               mkdir -p "$TMPZIP"
               cp "$DL_DIR/$DL_FILE" "$TMPZIP/"
-              (cd "$TMPZIP" && zip -s 99m "../direct/${ZIP_NAME}" "$DL_FILE")
+
+              if [ "$UPLOAD_METHOD" = "release" ]; then
+                (cd "$TMPZIP" && zip "../${OUTPUT_DIR}/${ZIP_NAME}" "$DL_FILE")
+                FULLZIP="${OUTPUT_DIR}/${ZIP_NAME}"
+                SIZE=$(stat -c%s "$FULLZIP" 2>/dev/null || echo 0)
+                if [ "$SIZE" -gt 2044723200 ]; then
+                  echo "ZIP larger than 1950 MiB, splitting"
+                  rm "$FULLZIP"
+                  (cd "$TMPZIP" && zip -s 1950m "../${OUTPUT_DIR}/${ZIP_NAME}" "$DL_FILE")
+                fi
+              else
+                (cd "$TMPZIP" && zip -s 99m "../${OUTPUT_DIR}/${ZIP_NAME}" "$DL_FILE")
+              fi
               rm -rf "$TMPZIP"
             fi
 
-            # Clean up download temporary directory
             rm -rf "$DL_DIR"
           done < urls.txt
 
-          # After processing all URLs, handle failures
           if [ -s "$FAILED_FILE" ]; then
             RAND_FAIL=$(tr -dc 'a-z' </dev/urandom | head -c5)
             FAIL_NAME="links-failed-${RAND_FAIL}.txt"
-            mv "$FAILED_FILE" "direct/$FAIL_NAME"
-            echo "Created failure report: direct/$FAIL_NAME"
+            mv "$FAILED_FILE" "${OUTPUT_DIR}/$FAIL_NAME"
+            echo "Created failure report: ${OUTPUT_DIR}/$FAIL_NAME"
           else
             rm -f "$FAILED_FILE"
           fi
 
-          # If bundling and there are files, create the master split zip
           if [ "$BUNDLE_ALL" = "true" ] && [ -n "$(ls -A "$BUNDLE_DIR" 2>/dev/null)" ]; then
             RAND_BUNDLE=$(tr -dc 'a-z' </dev/urandom | head -c5)
             BUNDLE_ZIP="bundle_${RAND_BUNDLE}.zip"
             echo "Creating bundle: $BUNDLE_ZIP"
-            (cd "$BUNDLE_DIR" && zip -s 99m "../direct/${BUNDLE_ZIP}" *)
+            if [ "$UPLOAD_METHOD" = "release" ]; then
+              (cd "$BUNDLE_DIR" && zip "../${OUTPUT_DIR}/${BUNDLE_ZIP}" *)
+              FULLBUNDLE="${OUTPUT_DIR}/${BUNDLE_ZIP}"
+              SIZE=$(stat -c%s "$FULLBUNDLE" 2>/dev/null || echo 0)
+              if [ "$SIZE" -gt 2044723200 ]; then
+                echo "Bundle ZIP larger than 1950 MiB, splitting"
+                rm "$FULLBUNDLE"
+                (cd "$BUNDLE_DIR" && zip -s 1950m "../${OUTPUT_DIR}/${BUNDLE_ZIP}" *)
+              fi
+            else
+              (cd "$BUNDLE_DIR" && zip -s 99m "../${OUTPUT_DIR}/${BUNDLE_ZIP}" *)
+            fi
             rm -rf "$BUNDLE_DIR"
           else
             rm -rf "$BUNDLE_DIR"
           fi
 
-      - name: Upload to direct folder
+          ls -1 "$OUTPUT_DIR" > "${OUTPUT_DIR}_assets.txt"
+          echo "Assets to upload:"
+          cat "${OUTPUT_DIR}_assets.txt"
+
+      - name: Upload to repository (split_push method)
+        if: ${{ github.event.inputs.upload_as_release == 'false' }}
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
@@ -153,13 +184,14 @@ jobs:
           git config user.email "actions@github.com"
           git config http.postBuffer 524288000
 
-          if [ -z "$(ls -A direct/)" ]; then
+          OUTPUT_DIR="direct"
+          if [ -z "$(ls -A "$OUTPUT_DIR/")" ]; then
             echo "No files to upload."
             exit 0
           fi
 
-          git add direct/
-          COMMIT_MSG="Add: $(ls -1 direct/ | tr '\n' ' ' | sed 's/ *$//') [skip ci]"
+          git add "$OUTPUT_DIR/"
+          COMMIT_MSG="Add: $(ls -1 "$OUTPUT_DIR/" | tr '\n' ' ' | sed 's/ *$//') [skip ci]"
           git commit -m "$COMMIT_MSG" || echo "Nothing to commit"
 
           RETRIES=5
@@ -173,3 +205,36 @@ jobs:
               [ $i -lt $RETRIES ] && sleep 3 || exit 1
             fi
           done
+
+      - name: Create Release and upload assets (release method)
+        if: ${{ github.event.inputs.upload_as_release == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OUTPUT_DIR="direct"
+          if [ ! -s "${OUTPUT_DIR}_assets.txt" ]; then
+            echo "No assets to release."
+            exit 0
+          fi
+
+          RAND5=$(tr -dc 'a-z' </dev/urandom | head -c5)
+          TAG="direct-downloader-${RAND5}"
+          echo "Creating release tag: $TAG"
+
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git tag "$TAG" -m "Direct download release"
+          git push origin "$TAG"
+
+          ASSET_ARGS=""
+          while IFS= read -r file; do
+            ASSET_ARGS="$ASSET_ARGS ${OUTPUT_DIR}/$file"
+          done < "${OUTPUT_DIR}_assets.txt"
+
+          gh release create "$TAG" $ASSET_ARGS \
+            --title "direct-downloader-${RAND5}" \
+            --notes "Automated release from Direct Download workflow." \
+            --target "${{ github.ref_name }}"
+
+          echo "Release '$TAG' created with assets."
